@@ -1366,11 +1366,6 @@ jobs:
           sudo rm -rf tmp-images/*
           minikube ssh -n minikube-m02 -- docker image ls
 
-      - name: Create model root directory
-        run: |
-          minikube ssh -n minikube-m02 -- sudo mkdir -p -m=777 /models
-          minikube ssh -n minikube-m03 -- sudo mkdir -p -m=777 /models
-
       - name: Install UV
         run: ./test/scripts/gh-actions/setup-uv.sh
 
@@ -1386,10 +1381,6 @@ jobs:
       - name: Create localmodel job namespace
         run: |
           kubectl create ns kserve-localmodel-jobs
-
-      - name: Label worker nodes for modelcache
-        run: |
-          kubectl label nodes -l '!node-role.kubernetes.io/control-plane' kserve/localmodel=worker
 
       - name: Enable nodeselector in knative
         run: |

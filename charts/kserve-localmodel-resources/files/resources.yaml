@@ -62,6 +62,17 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - serving.kserve.io
   resources:
   - inferenceservices
@@ -69,6 +80,8 @@ rules:
   verbs:
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - serving.kserve.io
@@ -91,6 +104,17 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - serving.kserve.io
+  resources:
+  - localmodelnodegroups/finalizers
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - serving.kserve.io
   resources:
@@ -307,78 +331,6 @@ spec:
         secret:
           defaultMode: 420
           secretName: localmodel-webhook-server-cert
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  labels:
-    app.kubernetes.io/component: localmodel
-    app.kubernetes.io/name: kserve
-    control-plane: kserve-localmodelnode-agent
-    controller-tools.k8s.io: "1.0"
-  name: kserve-localmodelnode-agent
-  namespace: kserve
-spec:
-  selector:
-    matchLabels:
-      control-plane: kserve-localmodelnode-agent
-      controller-tools.k8s.io: "1.0"
-  template:
-    metadata:
-      annotations:
-        kubectl.kubernetes.io/default-container: manager
-      labels:
-        app.kubernetes.io/name: kserve-localmodelnode-agent
-        control-plane: kserve-localmodelnode-agent
-        controller-tools.k8s.io: "1.0"
-    spec:
-      containers:
-      - command:
-        - /manager
-        env:
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        image: kserve/kserve-localmodelnode-agent:latest
-        imagePullPolicy: Always
-        name: manager
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-        volumeMounts:
-        - mountPath: /mnt/models
-          name: models
-          readOnly: false
-      nodeSelector:
-        kserve/localmodel: worker
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      serviceAccountName: kserve-localmodelnode-agent
-      terminationGracePeriodSeconds: 10
-      volumes:
-      - hostPath:
-          path: /models
-          type: DirectoryOrCreate
-        name: models
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

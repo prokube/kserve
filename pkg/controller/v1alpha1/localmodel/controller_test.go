@@ -137,7 +137,13 @@ var _ = Describe("CachedModel controller", func() {
 		configs = map[string]string{
 			"localModel": `{
         		"jobNamespace": "kserve-localmodel-jobs",
-                "defaultJobImage": "kserve/storage-initializer:latest"
+                "defaultJobImage": "kserve/storage-initializer:latest",
+                "localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+                "localModelAgentImagePullPolicy": "IfNotPresent",
+                "localModelAgentCpuRequest": "100m",
+                "localModelAgentMemoryRequest": "200Mi",
+                "localModelAgentCpuLimit": "100m",
+                "localModelAgentMemoryLimit": "300Mi"
             }`,
 		}
 	)
@@ -476,10 +482,16 @@ var _ = Describe("CachedModel controller", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			configs = map[string]string{
 				"localModel": `{
-					"jobNamespace": "kserve-localmodel-jobs",
-					"defaultJobImage": "kserve/storage-initializer:latest",
-					"disableVolumeManagement": true
-				}`,
+				"jobNamespace": "kserve-localmodel-jobs",
+				"defaultJobImage": "kserve/storage-initializer:latest",
+				"disableVolumeManagement": true,
+				"localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+				"localModelAgentImagePullPolicy": "IfNotPresent",
+				"localModelAgentCpuRequest": "100m",
+				"localModelAgentMemoryRequest": "200Mi",
+				"localModelAgentCpuLimit": "100m",
+				"localModelAgentMemoryLimit": "300Mi"
+			}`,
 			}
 			configMap, clusterStorageContainer = genericSetup(ctx, configs, clusterStorageContainerSpec)
 			initializeManager(ctx, cfg)
@@ -544,9 +556,15 @@ var _ = Describe("CachedModel controller", func() {
 
 			configs = map[string]string{
 				"localModel": `{
-					"jobNamespace": "kserve-localmodel-jobs",
-					"defaultJobImage": "kserve/storage-initializer:latest"
-				}`,
+				"jobNamespace": "kserve-localmodel-jobs",
+				"defaultJobImage": "kserve/storage-initializer:latest",
+				"localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+				"localModelAgentImagePullPolicy": "IfNotPresent",
+				"localModelAgentCpuRequest": "100m",
+				"localModelAgentMemoryRequest": "200Mi",
+				"localModelAgentCpuLimit": "100m",
+				"localModelAgentMemoryLimit": "300Mi"
+			}`,
 			}
 		)
 		BeforeEach(func() {

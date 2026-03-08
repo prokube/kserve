@@ -415,7 +415,13 @@ data:
       "fsGroup": 1000,
       "jobTTLSecondsAfterFinished": 3600,
       "reconcilationFrequencyInSecs": 60,
-      "disableVolumeManagement": false
+      "disableVolumeManagement": false,
+      "localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+      "localModelAgentImagePullPolicy": "IfNotPresent",
+      "localModelAgentCpuRequest": "100m",
+      "localModelAgentMemoryRequest": "200Mi",
+      "localModelAgentCpuLimit": "100m",
+      "localModelAgentMemoryLimit": "300Mi"
     }
   logger: |-
     {
