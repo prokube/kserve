@@ -19,28 +19,28 @@ echo "::endgroup::"
 
 echo "::group::Describe pods/Gather logs in kserve namespace"
 if ! kubectl get namespace kserve &>/dev/null; then
-  echo "⚠️ Namespace kserve does not exist, skipping..."
-  return
+	echo "⚠️ Namespace kserve does not exist, skipping..."
+	return
 fi
 
-for pod in $(kubectl get pods -n  kserve -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-  echo "--- Pod: $pod ---"
-  kubectl describe pods -n kserve $pod
-  kubectl logs -n kserve $pod --all-containers=true --tail=1000 2>&1
-  echo "--- End Pod: $pod ---"
+for pod in $(kubectl get pods -n kserve -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+	echo "--- Pod: $pod ---"
+	kubectl describe pods -n kserve $pod
+	kubectl logs -n kserve $pod --all-containers=true --tail=1000 2>&1
+	echo "--- End Pod: $pod ---"
 done
 echo "::endgroup::"
 
 echo "::group::Pod manifest in kserve namespace"
 if ! kubectl get namespace kserve &>/dev/null; then
-  echo "⚠️ Namespace kserve does not exist, skipping..."
-  return
+	echo "⚠️ Namespace kserve does not exist, skipping..."
+	return
 fi
 
-for pod in $(kubectl get pods -n  kserve -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-  echo "--- Pod: $pod ---"
-  kubectl get pods -n kserve $pod -o yaml
-  echo "--- End Pod: $pod ---"
+for pod in $(kubectl get pods -n kserve -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+	echo "--- Pod: $pod ---"
+	kubectl get pods -n kserve $pod -o yaml
+	echo "--- End Pod: $pod ---"
 done
 echo "::endgroup::"
 
@@ -66,15 +66,15 @@ echo "::endgroup::"
 
 echo "::group::Gather logs in kserve-ci-e2e-test namespace"
 if ! kubectl get namespace kserve-ci-e2e-test &>/dev/null; then
-  echo "⚠️ Namespace kserve-ci-e2e-test does not exist, skipping..."
-  return
+	echo "⚠️ Namespace kserve-ci-e2e-test does not exist, skipping..."
+	return
 fi
 
-for pod in $(kubectl get pods -n  kserve-ci-e2e-test -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-  echo "--- Pod: $pod ---"
-  kubectl describe pods -n kserve-ci-e2e-test $pod
-  kubectl logs -n kserve-ci-e2e-test $pod --all-containers=true --tail=1000 2>&1
-  echo "--- End Pod: $pod ---"
+for pod in $(kubectl get pods -n kserve-ci-e2e-test -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+	echo "--- Pod: $pod ---"
+	kubectl describe pods -n kserve-ci-e2e-test $pod
+	kubectl logs -n kserve-ci-e2e-test $pod --all-containers=true --tail=1000 2>&1
+	echo "--- End Pod: $pod ---"
 done
 echo "::endgroup::"
 
@@ -91,59 +91,58 @@ kubectl logs -l control-plane=kserve-localmodel-controller-manager -n kserve -c 
 echo "::endgroup::"
 
 echo "::group::Kserve ModelCache Agent Logs"
-for pod in $(kubectl get pods -l control-plane=kserve-localmodelnode-agent -o jsonpath='{.items[*].metadata.name}' -n kserve); do
-    echo "=====================================  Logs for modelcache agent: $pod  ========================================="
-    kubectl logs "$pod" -c manager -n kserve --tail -1
-    echo "================================================================================================================"
+for pod in $(kubectl get pods -l app.kubernetes.io/component=localmodelnode-agent -o jsonpath='{.items[*].metadata.name}' -n kserve); do
+	echo "=====================================  Logs for modelcache agent: $pod  ========================================="
+	kubectl logs "$pod" -c manager -n kserve --tail -1
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
 echo "::group::Predictor Pod logs"
 for pod in $(kubectl get pods -l 'component in (predictor)' -o jsonpath='{.items[*].metadata.name}' -n kserve-ci-e2e-test); do
-    echo "=====================================  Logs for Predictor Pod: $pod  ========================================="
-    kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for Predictor Pod: $pod  ========================================="
+	kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
-
 echo "::group::Transformer Pod logs"
 for pod in $(kubectl get pods -l 'component in (transformer)' -o jsonpath='{.items[*].metadata.name}' -n kserve-ci-e2e-test); do
-    echo "=====================================  Logs for Transformer Pod: $pod  ======================================="
-    kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for Transformer Pod: $pod  ======================================="
+	kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
 echo "::group::Explainer Pod logs"
 for pod in $(kubectl get pods -l 'component in (explainer)' -o jsonpath='{.items[*].metadata.name}' -n kserve-ci-e2e-test); do
-    echo "=====================================  Logs for Explainer Pod: $pod  ========================================="
-    kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for Explainer Pod: $pod  ========================================="
+	kubectl logs "$pod" -c kserve-container -n kserve-ci-e2e-test --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
 echo "::group::InferenceGraph Pod logs"
 for pod in $(kubectl get pods -l 'serving.kserve.io/inferencegraph=model-chainer' -o jsonpath='{.items[*].metadata.name}' -n kserve-ci-e2e-test); do
-    echo "=====================================  Logs for Graph Pod: $pod  ========================================="
-    kubectl logs "$pod" -c user-container -n kserve-ci-e2e-test --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for Graph Pod: $pod  ========================================="
+	kubectl logs "$pod" -c user-container -n kserve-ci-e2e-test --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
 echo "::group::KEDA Pod logs"
 for pod in $(kubectl get pods -o jsonpath='{.items[*].metadata.name}' -n keda); do
-    echo "=====================================  Logs for KEDA Pod: $pod  ========================================="
-    kubectl logs "$pod" -n keda --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for KEDA Pod: $pod  ========================================="
+	kubectl logs "$pod" -n keda --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
 echo "::group::OpenTelemetry Operator Pod logs"
 for pod in $(kubectl get pods -o jsonpath='{.items[*].metadata.name}' -n opentelemetry-operator); do
-    echo "=====================================  Logs for OpenTelemetry Operator Pod: $pod  ========================================="
-    kubectl logs "$pod" -n opentelemetry-operator --tail 500
-    echo "================================================================================================================"
+	echo "=====================================  Logs for OpenTelemetry Operator Pod: $pod  ========================================="
+	kubectl logs "$pod" -n opentelemetry-operator --tail 500
+	echo "================================================================================================================"
 done
 echo "::endgroup::"
 
@@ -159,69 +158,69 @@ echo "::endgroup::"
 
 shopt -s nocasematch
 if [[ $# -eq 1 && "$1" == "kourier" ]]; then
-  echo "::group::Kourier Gateway Pod logs"
-  kubectl logs "$(kubectl get pod -n knative-serving -l 'app=3scale-kourier-gateway' --output=jsonpath='{.items[0].metadata.name}')" -n knative-serving
-  echo "::endgroup::"
+	echo "::group::Kourier Gateway Pod logs"
+	kubectl logs "$(kubectl get pod -n knative-serving -l 'app=3scale-kourier-gateway' --output=jsonpath='{.items[0].metadata.name}')" -n knative-serving
+	echo "::endgroup::"
 else
-  echo "::group::Istio Ingress Gateway Pod logs"
-  kubectl logs "$(kubectl get pods -n istio-system --output=jsonpath={.items..metadata.name} -l app=istio-ingressgateway)" -n istio-system
-  echo "::endgroup::"
+	echo "::group::Istio Ingress Gateway Pod logs"
+	kubectl logs "$(kubectl get pods -n istio-system --output=jsonpath={.items..metadata.name} -l app=istio-ingressgateway)" -n istio-system
+	echo "::endgroup::"
 fi
 
 if [[ $# -eq 1 && "$1" == "llmisvc" ]]; then
-  echo "::group::Enhanced LLMISvc system status check... Resources"
-  kubectl get gateways -A -o yaml
-  kubectl get httproutes -A
-  kubectl get httproute -n kserve-ci-e2e-test -o yaml
-  kubectl get inferencepools -A
-  kubectl get inferenceobjectives -A
-  kubectl get inferenceobjectives -n kserve-ci-e2e-test -o yaml
-  kubectl get inferencepools -n kserve-ci-e2e-test -o yaml
-  kubectl get llminferenceservices -n kserve-ci-e2e-test -o yaml
-  kubectl get llminferenceserviceconfigs -A
-  kubectl get validatingwebhookconfiguration | grep llm
-  kubectl get gatewayclasses -A
-  kubectl get svc -A
-  kubectl get certificate -A
-  echo "::endgroup::"
-  echo "::group::Describing LLMInferenceServices in kserve-ci-e2e-test namespace"
-  if ! kubectl get namespace kserve-ci-e2e-test &>/dev/null; then
-    echo "⚠️ Namespace kserve-ci-e2e-test does not exist, skipping..."
-    return
-  fi
-  
-  for llmisvc in $(kubectl get llminferenceservices -n kserve-ci-e2e-test -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-    echo "=== LLMInferenceService: $llmisvc ==="
-    kubectl describe llminferenceservices -n kserve-ci-e2e-test $llmisvc 2>&1
-  done
+	echo "::group::Enhanced LLMISvc system status check... Resources"
+	kubectl get gateways -A -o yaml
+	kubectl get httproutes -A
+	kubectl get httproute -n kserve-ci-e2e-test -o yaml
+	kubectl get inferencepools -A
+	kubectl get inferenceobjectives -A
+	kubectl get inferenceobjectives -n kserve-ci-e2e-test -o yaml
+	kubectl get inferencepools -n kserve-ci-e2e-test -o yaml
+	kubectl get llminferenceservices -n kserve-ci-e2e-test -o yaml
+	kubectl get llminferenceserviceconfigs -A
+	kubectl get validatingwebhookconfiguration | grep llm
+	kubectl get gatewayclasses -A
+	kubectl get svc -A
+	kubectl get certificate -A
+	echo "::endgroup::"
+	echo "::group::Describing LLMInferenceServices in kserve-ci-e2e-test namespace"
+	if ! kubectl get namespace kserve-ci-e2e-test &>/dev/null; then
+		echo "⚠️ Namespace kserve-ci-e2e-test does not exist, skipping..."
+		return
+	fi
 
-  echo "::endgroup::"
+	for llmisvc in $(kubectl get llminferenceservices -n kserve-ci-e2e-test -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+		echo "=== LLMInferenceService: $llmisvc ==="
+		kubectl describe llminferenceservices -n kserve-ci-e2e-test $llmisvc 2>&1
+	done
 
-  echo "::group::Gather logs in envoy-gateway-system envoy-ai-gateway-system"
-  NAMESPACES="envoy-gateway-system envoy-ai-gateway-system"
+	echo "::endgroup::"
 
-  for ns in $NAMESPACES; do
-    if ! kubectl get namespace $ns &>/dev/null; then
-      echo "⚠️ Namespace $ns does not exist, skipping..."
-      continue
-    fi
+	echo "::group::Gather logs in envoy-gateway-system envoy-ai-gateway-system"
+	NAMESPACES="envoy-gateway-system envoy-ai-gateway-system"
 
-    echo "=== Namespace: $ns ==="
+	for ns in $NAMESPACES; do
+		if ! kubectl get namespace $ns &>/dev/null; then
+			echo "⚠️ Namespace $ns does not exist, skipping..."
+			continue
+		fi
 
-    echo "--- Events ---"
-    kubectl get events -n $ns --sort-by='.lastTimestamp' | tail -20
-    echo "--- End Events ---"
+		echo "=== Namespace: $ns ==="
 
-    echo "--- Pods ---"
-    kubectl get pods -n $ns
-    for pod in $(kubectl get pods -n $ns -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-      echo "--- Pod: $pod ---"
-      kubectl describe pods -n $ns $pod
-      kubectl logs -n $ns $pod --all-containers=true --tail=1000 2>&1
-      echo "--- End Pod: $pod ---"
-    done
-    echo "--- End Pods ---"
-  done
-  echo "::endgroup::"  
+		echo "--- Events ---"
+		kubectl get events -n $ns --sort-by='.lastTimestamp' | tail -20
+		echo "--- End Events ---"
+
+		echo "--- Pods ---"
+		kubectl get pods -n $ns
+		for pod in $(kubectl get pods -n $ns -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+			echo "--- Pod: $pod ---"
+			kubectl describe pods -n $ns $pod
+			kubectl logs -n $ns $pod --all-containers=true --tail=1000 2>&1
+			echo "--- End Pod: $pod ---"
+		done
+		echo "--- End Pods ---"
+	done
+	echo "::endgroup::"
 fi
 shopt -u nocasematch
