@@ -21,19 +21,3 @@ kserve:
         requests:
           cpu: 100m
           memory: 200Mi
-  localmodelnode:
-    controller:
-      image: kserve/kserve-localmodelnode-agent
-      tag: ''
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: 100m
-          memory: 300Mi
-        requests:
-          cpu: 100m
-          memory: 200Mi
-      nodeSelector:
-        kserve/localmodel: worker
-      affinity: {}
-      tolerations: []
