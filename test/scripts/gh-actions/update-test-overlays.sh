@@ -16,7 +16,6 @@
 
 # The script is used to deploy knative and kserve, and run e2e tests.
 
-
 # Update KServe configurations to use the correct tag. This replaces all 'latest' entries in the configmap include the
 # agent and storage-initializer.
 sed -i -e "s/latest/${TAG}/g" config/overlays/test/configmap/inferenceservice.yaml
@@ -29,9 +28,6 @@ sed -i -e "s/latest/${TAG}/g" config/overlays/test/manager_image_patch.yaml
 
 # Update localmodel controller image tag
 sed -i -e "s/latest/${TAG}/g" config/overlays/test/localmodel_manager_image_patch.yaml
-
-# Update localmodel agent image tag
-sed -i -e "s/latest/${TAG}/g" config/overlays/test/localmodelnode_agent_image_patch.yaml
 
 # Update llmisvc controller image tag
 sed -i -e "s/latest/${TAG}/g" config/overlays/test-llmisvc/llmisvc_image_patch.yaml
