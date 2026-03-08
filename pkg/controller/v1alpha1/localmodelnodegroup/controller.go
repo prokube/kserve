@@ -25,6 +25,7 @@ package localmodelnodegroup
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -162,7 +163,7 @@ func (r *LocalModelNodeGroupReconciler) createPVC(ctx context.Context, nodeGroup
 	}
 }
 
-func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, localModelConfig v1beta1.LocalModelConfig, pvcName string) *appsv1.DaemonSet {
+func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, localModelConfig v1beta1.LocalModelConfig, pvcName string) (*appsv1.DaemonSet, error) {
 	agentName := nodeGroup.Name + agentSuffix
 	agentLabels := map[string]string{
 		appNameLabel:      agentName,
@@ -170,6 +171,38 @@ func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, loca
 		appManagedByLabel: managedByValue,
 		appComponentLabel: daemonsetComponent,
 	}
+
+	// Parse resource quantities safely instead of using MustParse
+	cpuRequest, err := resource.ParseQuantity(localModelConfig.LocalModelAgentCpuRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse localModelAgentCpuRequest %q: %w", localModelConfig.LocalModelAgentCpuRequest, err)
+	}
+	memoryRequest, err := resource.ParseQuantity(localModelConfig.LocalModelAgentMemoryRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse localModelAgentMemoryRequest %q: %w", localModelConfig.LocalModelAgentMemoryRequest, err)
+	}
+	cpuLimit, err := resource.ParseQuantity(localModelConfig.LocalModelAgentCpuLimit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse localModelAgentCpuLimit %q: %w", localModelConfig.LocalModelAgentCpuLimit, err)
+	}
+	memoryLimit, err := resource.ParseQuantity(localModelConfig.LocalModelAgentMemoryLimit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse localModelAgentMemoryLimit %q: %w", localModelConfig.LocalModelAgentMemoryLimit, err)
+	}
+
+	// Build node affinity from PV spec only when NodeAffinity is set
+	var affinity *corev1.Affinity
+	if nodeGroup.Spec.PersistentVolumeSpec.NodeAffinity != nil &&
+		nodeGroup.Spec.PersistentVolumeSpec.NodeAffinity.Required != nil {
+		affinity = &corev1.Affinity{
+			NodeAffinity: &corev1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+					NodeSelectorTerms: nodeGroup.Spec.PersistentVolumeSpec.NodeAffinity.Required.NodeSelectorTerms,
+				},
+			},
+		}
+	}
+
 	agent := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      agentName,
@@ -226,12 +259,12 @@ func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, loca
 							},
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse(localModelConfig.LocalModelAgentCpuRequest),
-									corev1.ResourceMemory: resource.MustParse(localModelConfig.LocalModelAgentMemoryRequest),
+									corev1.ResourceCPU:    cpuRequest,
+									corev1.ResourceMemory: memoryRequest,
 								},
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse(localModelConfig.LocalModelAgentCpuLimit),
-									corev1.ResourceMemory: resource.MustParse(localModelConfig.LocalModelAgentMemoryLimit),
+									corev1.ResourceCPU:    cpuLimit,
+									corev1.ResourceMemory: memoryLimit,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
@@ -243,14 +276,7 @@ func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, loca
 							},
 						},
 					},
-					// Daemonset should only run on nodes that match the PV node selector
-					Affinity: &corev1.Affinity{
-						NodeAffinity: &corev1.NodeAffinity{
-							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-								NodeSelectorTerms: nodeGroup.Spec.PersistentVolumeSpec.NodeAffinity.Required.NodeSelectorTerms,
-							},
-						},
-					},
+					Affinity:           affinity,
 					ServiceAccountName: serviceAccountName,
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot: ptr.To(true),
@@ -271,7 +297,7 @@ func createLocalModelAgentDaemonSet(nodeGroup v1alpha1.LocalModelNodeGroup, loca
 			},
 		},
 	}
-	return agent
+	return agent, nil
 }
 
 // semanticEquals checks if the desired and existing DaemonSet are semantically equal
@@ -286,7 +312,11 @@ func semanticEquals(desired, existing *appsv1.DaemonSet) bool {
 func (r *LocalModelNodeGroupReconciler) reconcileDaemonSet(ctx context.Context, nodeGroup *v1alpha1.LocalModelNodeGroup, localModelConfig *v1beta1.LocalModelConfig, pvcName string) error {
 	// Create desired DaemonSet
 	existing := &appsv1.DaemonSet{}
-	desired := createLocalModelAgentDaemonSet(*nodeGroup, *localModelConfig, pvcName)
+	desired, err := createLocalModelAgentDaemonSet(*nodeGroup, *localModelConfig, pvcName)
+	if err != nil {
+		r.Log.Error(err, "Failed to create desired DaemonSet spec")
+		return err
+	}
 	if err := controllerutil.SetControllerReference(nodeGroup, desired, r.Scheme); err != nil {
 		r.Log.Error(err, "Failed to set controller reference for DaemonSet", "name", desired.Name, "namespace", desired.Namespace)
 		return err
@@ -404,5 +434,7 @@ func (r *LocalModelNodeGroupReconciler) SetupWithManager(mgr ctrl.Manager) error
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.LocalModelNodeGroup{}).
 		Owns(&appsv1.DaemonSet{}).
+		Owns(&corev1.PersistentVolumeClaim{}).
+		Owns(&corev1.PersistentVolume{}).
 		Complete(r)
 }

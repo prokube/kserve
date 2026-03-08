@@ -295,5 +295,5 @@ func initializeManager(ctx context.Context, cfg *rest.Config) {
 	// Wait for cache to start
 	Eventually(func() bool {
 		return k8sClient.Get(ctx, types.NamespacedName{Name: constants.InferenceServiceConfigMapName, Namespace: constants.KServeNamespace}, &corev1.ConfigMap{}) == nil
-	}).Should(BeTrue())
+	}, time.Second*10, time.Millisecond*250).Should(BeTrue())
 }

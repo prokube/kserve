@@ -403,6 +403,27 @@ func NewLocalModelConfig(isvcConfigMap *corev1.ConfigMap) (*LocalModelConfig, er
 		}
 	}
 
+	// Validate local model agent resource quantity fields if set
+	resourceFields := map[string]string{}
+	if localModelConfig.LocalModelAgentCpuRequest != "" {
+		resourceFields["localModelAgentCpuRequest"] = localModelConfig.LocalModelAgentCpuRequest
+	}
+	if localModelConfig.LocalModelAgentMemoryRequest != "" {
+		resourceFields["localModelAgentMemoryRequest"] = localModelConfig.LocalModelAgentMemoryRequest
+	}
+	if localModelConfig.LocalModelAgentCpuLimit != "" {
+		resourceFields["localModelAgentCpuLimit"] = localModelConfig.LocalModelAgentCpuLimit
+	}
+	if localModelConfig.LocalModelAgentMemoryLimit != "" {
+		resourceFields["localModelAgentMemoryLimit"] = localModelConfig.LocalModelAgentMemoryLimit
+	}
+	for key, value := range resourceFields {
+		if _, err := resource.ParseQuantity(value); err != nil {
+			return nil, fmt.Errorf("failed to parse resource configuration for %q.%q: %w",
+				LocalModelConfigName, key, err)
+		}
+	}
+
 	return localModelConfig, nil
 }
 
