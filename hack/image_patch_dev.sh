@@ -61,6 +61,7 @@ EOF
 
 AGENT_IMG=$(ko resolve ${KO_OPTS:-} -f config/overlays/development/configmap/ko_resolve_agent | grep 'image:' | awk '{print $2}')
 ROUTER_IMG=$(ko resolve ${KO_OPTS:-} -f config/overlays/development/configmap/ko_resolve_router | grep 'image:' | awk '{print $2}')
+LOCALMODEL_AGENT_IMG=$(ko resolve ${KO_OPTS:-} -f config/overlays/development/configmap/ko_resolve_localmodelnode_agent | grep 'image:' | awk '{print $2}')
 
 if [ -z ${AGENT_IMG} ]; then exit; fi
 
@@ -107,5 +108,9 @@ data:
     {
         "enableMetricAggregation": "false",
         "enablePrometheusScraping" : "false"
+    }
+  localModel: |-
+    {
+        "localModelAgentImage": "${LOCALMODEL_AGENT_IMG:-kserve/kserve-localmodelnode-agent:latest}"
     }
 EOF
