@@ -621,7 +621,19 @@ data:
          # This is to detect if models are missing from local disk
          "reconcilationFrequencyInSecs": 60,
          # This is to disable localmodel pv and pvc management for namespaces without isvcs
-         "disableVolumeManagement": false
+         "disableVolumeManagement": false,
+         # localModelAgentImage specifies the image used for the localmodel node agent DaemonSet.
+         "localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+         # localModelAgentImagePullPolicy specifies the image pull policy for the agent. Must be Always, IfNotPresent, or Never.
+         "localModelAgentImagePullPolicy": "IfNotPresent",
+         # localModelAgentCpuRequest is the CPU request for the agent container.
+         "localModelAgentCpuRequest": "100m",
+         # localModelAgentMemoryRequest is the memory request for the agent container.
+         "localModelAgentMemoryRequest": "200Mi",
+         # localModelAgentCpuLimit is the CPU limit for the agent container.
+         "localModelAgentCpuLimit": "100m",
+         # localModelAgentMemoryLimit is the memory limit for the agent container.
+         "localModelAgentMemoryLimit": "300Mi"
        }
 
   explainers: |-
@@ -743,7 +755,13 @@ data:
       "fsGroup": 1000,
       "jobTTLSecondsAfterFinished": 3600,
       "reconcilationFrequencyInSecs": 60,
-      "disableVolumeManagement": false
+      "disableVolumeManagement": false,
+      "localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+      "localModelAgentImagePullPolicy": "IfNotPresent",
+      "localModelAgentCpuRequest": "100m",
+      "localModelAgentMemoryRequest": "200Mi",
+      "localModelAgentCpuLimit": "100m",
+      "localModelAgentMemoryLimit": "300Mi"
     }
 
   security: |-
