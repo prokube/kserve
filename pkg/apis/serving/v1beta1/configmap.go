@@ -152,13 +152,19 @@ type RolloutSpec struct {
 
 // +kubebuilder:object:generate=false
 type LocalModelConfig struct {
-	Enabled                      bool   `json:"enabled"`
-	JobNamespace                 string `json:"jobNamespace"`
-	DefaultJobImage              string `json:"defaultJobImage,omitempty"`
-	FSGroup                      *int64 `json:"fsGroup,omitempty"`
-	JobTTLSecondsAfterFinished   *int32 `json:"jobTTLSecondsAfterFinished,omitempty"`
-	ReconcilationFrequencyInSecs *int64 `json:"reconcilationFrequencyInSecs,omitempty"`
-	DisableVolumeManagement      bool   `json:"disableVolumeManagement,omitempty"`
+	Enabled                        bool   `json:"enabled"`
+	JobNamespace                   string `json:"jobNamespace"`
+	DefaultJobImage                string `json:"defaultJobImage,omitempty"`
+	FSGroup                        *int64 `json:"fsGroup,omitempty"`
+	JobTTLSecondsAfterFinished     *int32 `json:"jobTTLSecondsAfterFinished,omitempty"`
+	ReconcilationFrequencyInSecs   *int64 `json:"reconcilationFrequencyInSecs,omitempty"`
+	DisableVolumeManagement        bool   `json:"disableVolumeManagement,omitempty"`
+	LocalModelAgentImage           string `json:"localModelAgentImage,omitempty"`
+	LocalModelAgentImagePullPolicy string `json:"localModelAgentImagePullPolicy,omitempty"`
+	LocalModelAgentCpuRequest      string `json:"localModelAgentCpuRequest,omitempty"`
+	LocalModelAgentMemoryRequest   string `json:"localModelAgentMemoryRequest,omitempty"`
+	LocalModelAgentCpuLimit        string `json:"localModelAgentCpuLimit,omitempty"`
+	LocalModelAgentMemoryLimit     string `json:"localModelAgentMemoryLimit,omitempty"`
 }
 
 // +kubebuilder:object:generate=false
@@ -385,6 +391,18 @@ func NewLocalModelConfig(isvcConfigMap *corev1.ConfigMap) (*LocalModelConfig, er
 			return nil, err
 		}
 	}
+
+	// Validate LocalModelAgentImagePullPolicy if set
+	if localModelConfig.LocalModelAgentImagePullPolicy != "" {
+		switch corev1.PullPolicy(localModelConfig.LocalModelAgentImagePullPolicy) {
+		case corev1.PullAlways, corev1.PullIfNotPresent, corev1.PullNever:
+			// valid
+		default:
+			return nil, fmt.Errorf("invalid localModelAgentImagePullPolicy %q: must be Always, IfNotPresent, or Never",
+				localModelConfig.LocalModelAgentImagePullPolicy)
+		}
+	}
+
 	return localModelConfig, nil
 }
 
