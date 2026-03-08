@@ -531,6 +531,131 @@ func TestNewLocalModelConfig(t *testing.T) {
 		g.Expect(err).Should(gomega.HaveOccurred())
 		g.Expect(cfg).To(gomega.BeNil())
 	})
+
+	t.Run("accepts valid pull policy Always", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentImagePullPolicy": "Always"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentImagePullPolicy).To(gomega.Equal("Always"))
+	})
+
+	t.Run("accepts valid pull policy IfNotPresent", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentImagePullPolicy": "IfNotPresent"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentImagePullPolicy).To(gomega.Equal("IfNotPresent"))
+	})
+
+	t.Run("accepts valid pull policy Never", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentImagePullPolicy": "Never"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentImagePullPolicy).To(gomega.Equal("Never"))
+	})
+
+	t.Run("returns error for invalid pull policy", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentImagePullPolicy": "InvalidPolicy"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).Should(gomega.HaveOccurred())
+		g.Expect(cfg).To(gomega.BeNil())
+		g.Expect(err.Error()).To(gomega.ContainSubstring("invalid localModelAgentImagePullPolicy"))
+	})
+
+	t.Run("accepts empty pull policy", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentImagePullPolicy": ""}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentImagePullPolicy).To(gomega.BeEmpty())
+	})
+
+	t.Run("accepts missing pull policy", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"jobNamespace": "test-ns"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentImagePullPolicy).To(gomega.BeEmpty())
+	})
+
+	t.Run("accepts valid resource quantities", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{
+					"localModelAgentCpuRequest": "100m",
+					"localModelAgentMemoryRequest": "200Mi",
+					"localModelAgentCpuLimit": "500m",
+					"localModelAgentMemoryLimit": "1Gi"
+				}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentCpuRequest).To(gomega.Equal("100m"))
+		g.Expect(cfg.LocalModelAgentMemoryRequest).To(gomega.Equal("200Mi"))
+		g.Expect(cfg.LocalModelAgentCpuLimit).To(gomega.Equal("500m"))
+		g.Expect(cfg.LocalModelAgentMemoryLimit).To(gomega.Equal("1Gi"))
+	})
+
+	t.Run("returns error for invalid CPU request quantity", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentCpuRequest": "not-a-quantity"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).Should(gomega.HaveOccurred())
+		g.Expect(cfg).To(gomega.BeNil())
+		g.Expect(err.Error()).To(gomega.ContainSubstring("localModelAgentCpuRequest"))
+	})
+
+	t.Run("returns error for invalid memory limit quantity", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{"localModelAgentMemoryLimit": "abc"}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).Should(gomega.HaveOccurred())
+		g.Expect(cfg).To(gomega.BeNil())
+		g.Expect(err.Error()).To(gomega.ContainSubstring("localModelAgentMemoryLimit"))
+	})
+
+	t.Run("accepts empty resource quantities", func(t *testing.T) {
+		cm := &corev1.ConfigMap{
+			Data: map[string]string{
+				LocalModelConfigName: `{
+					"localModelAgentCpuRequest": "",
+					"localModelAgentMemoryRequest": ""
+				}`,
+			},
+		}
+		cfg, err := NewLocalModelConfig(cm)
+		g.Expect(err).ShouldNot(gomega.HaveOccurred())
+		g.Expect(cfg.LocalModelAgentCpuRequest).To(gomega.BeEmpty())
+		g.Expect(cfg.LocalModelAgentMemoryRequest).To(gomega.BeEmpty())
+	})
 }
 
 func TestNewSecurityConfig(t *testing.T) {
