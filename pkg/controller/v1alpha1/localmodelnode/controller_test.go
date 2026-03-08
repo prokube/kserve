@@ -170,7 +170,13 @@ var _ = Describe("LocalModelNode controller", func() {
 		configs = map[string]string{
 			"localModel": `{
         		"jobNamespace": "kserve-localmodel-jobs",
-                "defaultJobImage": "kserve/storage-initializer:latest"
+                "defaultJobImage": "kserve/storage-initializer:latest",
+                "localModelAgentImage": "kserve/kserve-localmodelnode-agent:latest",
+                "localModelAgentImagePullPolicy": "IfNotPresent",
+                "localModelAgentCpuRequest": "100m",
+                "localModelAgentMemoryRequest": "200Mi",
+                "localModelAgentCpuLimit": "100m",
+                "localModelAgentMemoryLimit": "300Mi"
             }`,
 		}
 	)
