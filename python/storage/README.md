@@ -121,6 +121,20 @@ These are all handled by the `huggingface_hub` package, you can see all the avai
 - `S3_MAX_ATTEMPTS`: Maximum retry attempts for S3 operations (default: 3)
 - `awsAnonymousCredential`: Use unsigned requests for public access
 
+The storage initializer can exchange a SPIFFE JWT-SVID for temporary S3
+credentials before downloading a model. Set `SPIFFE_AUDIENCE` to enable this
+flow, and configure:
+
+- `SPIFFE_ENDPOINT_SOCKET`: SPIFFE Workload API Unix socket address
+- `AWS_ROLE_ARN`: role passed to `AssumeRoleWithWebIdentity`
+- `AWS_ROLE_SESSION_NAME`: optional session name (default: `kserve-storage-initializer`)
+- `AWS_ENDPOINT_URL_STS`: optional STS endpoint for S3-compatible storage
+
+The initializer writes the returned credentials to the standard
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`
+environment variables for the existing S3 downloader. Existing credential
+flows are unchanged when `SPIFFE_AUDIENCE` is unset.
+
 ### Azure Configuration
 
 - `AZURE_STORAGE_ACCESS_KEY`: Storage account access key

@@ -3,19 +3,26 @@ import sys
 
 from kserve_storage import Storage
 from kserve_storage.logging import configure_logging, logger
+from kserve_storage.s3_credentials import configure_spiffe_credentials
 
 configure_logging()
 
 if len(sys.argv) < 3 or len(sys.argv) % 2 != 1:
-    print("Usage: initializer-entrypoint src_uri_0 dest_path_0 ... src_uri_n dest_path_n")
+    print(
+        "Usage: initializer-entrypoint src_uri_0 dest_path_0 ... src_uri_n dest_path_n"
+    )
     sys.exit(1)
 
 src_uris = sys.argv[1::2]
 dest_paths = sys.argv[2::2]
 
-logger.info("Initializing, args: (src_uri, dest_path): %s", list(zip(src_uris, dest_paths)))
+logger.info(
+    "Initializing, args: (src_uri, dest_path): %s",
+    list(zip(src_uris, dest_paths, strict=True)),
+)
 
 try:
+    configure_spiffe_credentials()
     Storage.download_files(src_uris, dest_paths)
 except RuntimeError as e:
     logger.error("Storage initialization failed: %s", e)
